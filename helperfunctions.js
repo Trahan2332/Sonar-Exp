@@ -1,5 +1,10 @@
 //Contains classes and functions to be used in canvas
 
+// generates random numbers in range [min,max)
+function getRandomArbitrary(min,max) {
+  return Math.random() * (max - min) + min;
+}
+
 class Vector2D {
   constructor(x,y) {
     this.x = x;
@@ -24,7 +29,7 @@ class Vector2D {
 
   dot(v) {
     if (v instanceof Vector2D) {
-      return new Vector2D(this.x * v.x , this.y * v.y);
+      return this.x * v.x  + this.y * v.y;
     }
   }
 }
@@ -42,55 +47,105 @@ class Circle {
   draw ()  {
     ctx.beginPath();
     ctx.arc(this.x,this.y,this.radius,0,Math.PI * 2);
-    ctx.fillStyle = 'green';
+    ctx.fillStyle = 'black';
     ctx.fill();
     ctx.stroke();
   }
 
   update()  {
-    if (this.x + this.radius > innerWidth || this.x - this.radius < 0) {
+    if (this.x + this.radius + this.dx > canvas.width || this.x - this.radius < 0) {
       this.dx = -this.dx;
     } 
   
-    if ( this.y + this.radius > innerHeight || this.y - this.radius < 0) {
+    if ( this.y + this.radius + this.dy > canvas.height || this.y - this.radius < 0) {
       this.dy = -this.dy;
     }
     this.x += this.dx;
     this.y += this.dy;
 
     this.draw();
+    
   }
 }
 
 
-// generates random numbers in range [min,max)
-function getRandomArbitrary(min,max) {
-  return Math.random() * (max - min) + min;
-}
+class Ground {
+  constructor(points) {
+    this.points = points;
+    this.numOfDivisions = this.points + 1;
+  }
 
-
-
-
-// generates ground profile, input num denotes the number of central points
-function drawGround(num) {
-
-  const numOfDivisions = num + 1;// number of divisions
-  const randPercentCanvasHeight1 = getRandomArbitrary(0.9,1);
-  const randPercentCanvasHeight2 = getRandomArbitrary(0.9,1);
-
-  ctx.beginPath();
-  ctx.moveTo(0,canvas.height)
-    for (let i = 0; i < num ; i++) {
-      ctx.lineTo((i+1) * canvas.width/numOfDivisions, getRandomArbitrary(0.8,1) * canvas.height)
+  generateGroundParameters() {
+    let lineToX;
+    let lineToY;
+    let pointsArray = []
+    for (let i = 0; i < this.points ; i++) {
+      lineToX = (i+1) * canvas.width/this.numOfDivisions;
+      lineToY = getRandomArbitrary(0.8,1) * canvas.height;
+      pointsArray.push({lineToX,lineToY})
     }
-  
-  //ctx.lineTo(canvas.width/numOfDivisions,randPercentCanvasHeight1*canvas.height);
-  //ctx.lineTo(num * (canvas.width/numOfDivisions),randPercentCanvasHeight2*canvas.height);
-  ctx.lineTo(canvas.width,canvas.height);
-  ctx.stroke();
+    return pointsArray;
+  }
+
+  drawGround(array) {
+    ctx.beginPath();
+    ctx.moveTo(0,canvas.height)
+    for (let i = 0; i < this.points ; i++) {
+      ctx.lineTo(array[i].lineToX,array[i].lineToY);
+      ctx.stroke();
+    }
+    ctx.lineTo(canvas.width,canvas.height);
+    ctx.stroke();
+
+  }
 }
 
 
+class Segment {
+  constructor(x,y,vecx,vecy) {
+    this.x = x;
+    this.y = y;
+    this.vecx = vecx;
+    this.vecy = vecy;
+  }
+
+  drawSegment (width,color) {
+    ctx.beginPath();
+    ctx.lineWidth = width;
+    ctx.strokeStyle = color;
+    ctx.moveTo(this.x,this.y);
+    ctx.lineTo(this.x + this.vecx,this.y + this.vecy);//Change vector origin to (this.x,this.y)
+    ctx.stroke();
+  }
+
+  segmentLength() {
+    let deltaX = (this.x + this.vecx) - this.x;
+    let deltaY = (this.y + this.vecy) - this.y;
+    return Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+  }
+
+  updateSegment(circle,width,color) {
+    this.vecx = circle.x - this.x;
+    this.vecy = circle.y - this.y;
+    this.drawSegment(width,color);
+  }
+}
+
+
+class MouseControls {
+  constructor() {
+    this.x = 0;
+    this.y = 0;
+  }
+  
+  update() {
+      this.x = event.offsetX;
+      this.y = event.offsetY;
+      console.log(this.x,this.y)
+    }    
+    
+  }
+let mouse = new MouseControls();
 
 /* How to Draw...
 
