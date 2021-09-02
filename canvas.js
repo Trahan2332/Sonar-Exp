@@ -28,7 +28,7 @@ for (let i = 0; i < 1; i++) {
 const P = new Ground(3);//create an instance of ground class with desired number of interior points.
 const groundParam = P.generateGroundParameters();//returns an array of obj's [{}], containing the x,y coordinates of the interior line points to be plotted.
 
-const x1=100;
+//const x1=100;
 const y1=100;
 const vx1 = 200;
 const vy1 = 200
